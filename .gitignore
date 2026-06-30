@@ -1,0 +1,12 @@
+node_modules/
+out/
+dist/
+*.log
+.DS_Store
+
+# Dados do usuário / nunca versionar prontuário ou backups
+*.db
+*.db-wal
+*.db-shm
+cosmi.meta.json
+/backups/

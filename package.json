@@ -1,0 +1,61 @@
+{
+  "name": "cosmi",
+  "version": "0.1.0",
+  "description": "Prontuário de apoio em cosmiatria — offline, criptografado em repouso (SQLCipher). Não substitui o prontuário oficial.",
+  "author": "Cosmi",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "postinstall": "electron-builder install-app-deps",
+    "test:core": "node test/core.test.mjs",
+    "dist:win": "electron-vite build && electron-builder --win"
+  },
+  "dependencies": {
+    "argon2": "^0.41.1",
+    "better-sqlite3-multiple-ciphers": "^11.8.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^5.4.11"
+  },
+  "build": {
+    "appId": "br.cosmi.app",
+    "productName": "Cosmi",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "Cosmi-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Cosmi"
+    }
+  }
+}

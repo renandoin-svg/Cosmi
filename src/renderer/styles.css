@@ -1,0 +1,119 @@
+:root {
+  --bg: #0f1419;
+  --panel: #1a2129;
+  --panel-2: #232c36;
+  --border: #313c47;
+  --text: #e6edf3;
+  --muted: #93a1b0;
+  --accent: #2f9e8f;
+  --accent-hover: #38b3a2;
+  --danger: #d9534f;
+  --warn: #e0a93b;
+  --ok: #4caf72;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.center-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.card h1 { margin: 0 0 4px; font-size: 22px; }
+.card .sub { color: var(--muted); margin: 0 0 20px; font-size: 13px; line-height: 1.4; }
+
+label { display: block; font-size: 13px; margin: 14px 0 6px; color: var(--muted); }
+
+input[type="password"], input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+input:focus { outline: none; border-color: var(--accent); }
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: background .15s, border-color .15s;
+}
+button:hover { background: #2b3742; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #042; font-weight: 600; }
+button.primary:hover { background: var(--accent-hover); }
+button.danger { border-color: var(--danger); color: #f3b6b4; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+.full { width: 100%; margin-top: 18px; }
+
+.err { color: #f3b6b4; font-size: 13px; margin-top: 12px; min-height: 16px; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+.strength { height: 6px; border-radius: 3px; background: var(--panel-2); margin-top: 8px; overflow: hidden; }
+.strength > div { height: 100%; transition: width .2s; }
+
+/* Dashboard */
+.app { max-width: 980px; margin: 0 auto; padding: 24px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.topbar h1 { font-size: 20px; margin: 0; }
+.brand-note { color: var(--muted); font-size: 12px; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.panel h2 { font-size: 15px; margin: 0 0 14px; }
+
+.banner { border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; display: flex; gap: 10px; align-items: center; }
+.banner.warn { background: rgba(224,169,59,.12); border: 1px solid var(--warn); color: #f0d495; }
+.banner.ok   { background: rgba(76,175,114,.10); border: 1px solid var(--ok);   color: #b6e6c6; }
+
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.kv { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.kv:last-child { border-bottom: none; }
+.kv span:first-child { color: var(--muted); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 500; }
+.tag { font-size: 11px; padding: 2px 7px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); }
+.tag.pre { color: var(--warn); border-color: var(--warn); }
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.modal { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 100%; max-width: 460px; }
+.modal h2 { margin-top: 0; }
+
+.muted { color: var(--muted); }
+.mono { font-family: 'Consolas', monospace; font-size: 12px; }
+.spacer { flex: 1; }
