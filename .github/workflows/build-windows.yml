@@ -1,0 +1,57 @@
+name: Build Windows installer
+
+# Gera o instalador .exe do Cosmi numa máquina Windows do GitHub e publica em
+# "Releases", para download com dois cliques (sem Node/terminal na sua máquina).
+on:
+  push:
+    branches:
+      - claude/cosmiatra-data-security-vn9s7v
+  workflow_dispatch: {} # permite disparar manualmente pelo botão "Run workflow"
+
+permissions:
+  contents: write # necessário para publicar o Release com o .exe
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências (recompila nativos p/ Electron)
+        run: npm install
+
+      - name: Gerar o instalador Windows (NSIS)
+        run: npm run dist:win
+
+      - name: Guardar o instalador como artefato da execução
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cosmi-Windows-Installer
+          path: dist/*.exe
+          if-no-files-found: error
+
+      - name: Publicar em Releases (tag fixa "dev-build")
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-build
+          name: Cosmi — instalador de teste
+          prerelease: true
+          body: |
+            Instalador de teste do Cosmi (Seção 1: dados + segurança).
+
+            **Como instalar:**
+            1. Baixe o arquivo `Cosmi-Setup-0.1.0.exe` abaixo (em "Assets").
+            2. Dê dois cliques nele.
+            3. O Windows pode mostrar um aviso azul "O Windows protegeu o seu PC"
+               (porque o app ainda não tem assinatura digital paga). Clique em
+               **"Mais informações"** e depois em **"Executar assim mesmo"**.
+            4. Siga o instalador (Avançar → Instalar). Um atalho "Cosmi" é criado.
+
+            Registro de apoio, offline e criptografado. Não substitui o prontuário oficial.
+          files: dist/*.exe
