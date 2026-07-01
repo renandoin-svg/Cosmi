@@ -25,7 +25,8 @@ Implementado:
 ## Stack
 
 - **Electron + React** (interface), **better-sqlite3-multiple-ciphers**
-  (SQLCipher, com binários pré-compilados para Windows), **argon2** (N-API).
+  (SQLCipher, com binários pré-compilados para Windows), **hash-wasm**
+  (Argon2id em WebAssembly — sem dependência nativa/compilador).
 - Empacotamento: **electron-builder** → instalador **NSIS** para Windows.
 - Escolha justificada: o recurso central (mapa facial, §2) é SVG/Canvas e já tem
   referência em React; SQLCipher em Node tem binários prontos (instalação simples
@@ -40,11 +41,13 @@ npm run dev            # roda o app em desenvolvimento
 npm run dist:win       # gera o instalador Windows (.exe NSIS) — rodar no Windows
 ```
 
-> Nota de desenvolvimento: `better-sqlite3-multiple-ciphers` é nativo. O
-> `postinstall` (`electron-builder install-app-deps`) o recompila para o ABI do
-> **Electron**. Para rodar `npm run test:core` sob o **Node** puro, rode antes
+> Nota de desenvolvimento: `better-sqlite3-multiple-ciphers` é o único módulo
+> nativo. O `postinstall` (`electron-builder install-app-deps`) o prepara para o
+> ABI do **Electron** (usa binário pré-compilado; não precisa de compilador). Para
+> rodar `npm run test:core` sob o **Node** puro, rode antes
 > `npm rebuild better-sqlite3-multiple-ciphers`; depois restaure o ABI do Electron
-> com `npx electron-builder install-app-deps`. (`argon2` é N-API e funciona nos dois.)
+> com `npx electron-builder install-app-deps`. (`hash-wasm` é WebAssembly e funciona
+> nos dois sem rebuild.)
 
 ## Estrutura
 

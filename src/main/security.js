@@ -9,7 +9,7 @@
 //  - A chave só vive na RAM enquanto o app está destravado.
 
 import crypto from 'node:crypto';
-import argon2 from 'argon2';
+import { argon2id } from 'hash-wasm';
 
 // Parâmetros padrão do Argon2id. Ficam gravados no meta.json de cada banco,
 // então podem evoluir no futuro sem quebrar bancos antigos.
@@ -30,21 +30,23 @@ export function generateSalt() {
 
 // Deriva a chave bruta (Buffer de keyLength bytes) a partir da senha mestra.
 // `saltHex` é o salt em hex; `params` segue o formato de DEFAULT_KDF_PARAMS.
+// Usa hash-wasm (Argon2id em WebAssembly): mesmo algoritmo/parâmetros, sem
+// dependência nativa (não precisa de compilador/Visual Studio em nenhuma máquina).
 export async function deriveKey(password, saltHex, params = DEFAULT_KDF_PARAMS) {
   if (typeof password !== 'string' || password.length === 0) {
     throw new Error('Senha mestra vazia.');
   }
   const salt = Buffer.from(saltHex, 'hex');
-  const key = await argon2.hash(password, {
-    type: argon2.argon2id,
-    raw: true, // queremos os bytes brutos da chave, não o hash codificado
-    salt,
-    memoryCost: params.memoryCost,
-    timeCost: params.timeCost,
+  const hex = await argon2id({
+    password,
+    salt,                         // Uint8Array/Buffer
     parallelism: params.parallelism,
-    hashLength: params.keyLength,
+    iterations: params.timeCost,  // timeCost
+    memorySize: params.memoryCost, // em KiB
+    hashLength: params.keyLength,  // bytes
+    outputType: 'hex',
   });
-  return key; // Buffer
+  return Buffer.from(hex, 'hex'); // Buffer de keyLength bytes
 }
 
 // Converte a chave (Buffer) para a string hex usada no PRAGMA key do SQLCipher.
