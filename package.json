@@ -13,7 +13,7 @@
     "start": "electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
     "test:core": "node test/core.test.mjs",
-    "dist:win": "electron-vite build && electron-builder --win"
+    "dist:win": "electron-vite build && electron-builder --win --publish never"
   },
   "dependencies": {
     "better-sqlite3-multiple-ciphers": "^11.8.1",
