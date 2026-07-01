@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import MapaFacial from './MapaFacial.jsx';
 
 const api = window.cosmi;
 
@@ -28,7 +29,39 @@ export default function App() {
   if (view === 'loading') return <div className="center-screen"><div className="muted">Carregando…</div></div>;
   if (view === 'setup') return <Setup onDone={refreshStatus} />;
   if (view === 'unlock') return <Unlock onDone={refreshStatus} />;
-  return <Dashboard onLock={refreshStatus} />;
+  return <Shell onLock={refreshStatus} />;
+}
+
+function Shell({ onLock }) {
+  const [page, setPage] = useState('backup'); // backup | mapa
+  const [changePwd, setChangePwd] = useState(false);
+  const [toast, setToast] = useState('');
+  function flash(t) { setToast(t); setTimeout(() => setToast(''), 2500); }
+  async function lock() { await api.lock(); onLock(); }
+
+  return (
+    <div className="app">
+      <div className="topbar">
+        <div>
+          <h1>Cosmi</h1>
+          <div className="brand-note">Registro de apoio. Não substitui o prontuário oficial.</div>
+        </div>
+        <div className="row">
+          <div className="nav">
+            <button className={page === 'backup' ? 'active' : ''} onClick={() => setPage('backup')}>Segurança & Backup</button>
+            <button className={page === 'mapa' ? 'active' : ''} onClick={() => setPage('mapa')}>Mapa facial</button>
+          </div>
+          <button onClick={() => setChangePwd(true)}>Trocar senha</button>
+          <button onClick={lock}>Travar</button>
+        </div>
+      </div>
+
+      {page === 'backup' ? <Dashboard /> : <MapaFacial />}
+
+      {toast && <div className="banner ok" style={{ position: 'fixed', bottom: 18, right: 18, margin: 0 }}>{toast}</div>}
+      {changePwd && <ChangePasswordModal onClose={() => setChangePwd(false)} onDone={() => { setChangePwd(false); flash('Senha alterada.'); }} />}
+    </div>
+  );
 }
 
 function Setup({ onDone }) {
@@ -106,7 +139,7 @@ function Unlock({ onDone }) {
   );
 }
 
-function Dashboard({ onLock }) {
+function Dashboard() {
   const [health, setHealth] = useState(null);
   const [backups, setBackups] = useState([]);
   const [counts, setCounts] = useState({});
@@ -114,7 +147,6 @@ function Dashboard({ onLock }) {
   const [status, setStatus] = useState(null);
   const [toast, setToast] = useState('');
   const [restoreFor, setRestoreFor] = useState(null);
-  const [changePwd, setChangePwd] = useState(false);
 
   const reload = useCallback(async () => {
     const [h, b, c, s, st] = await Promise.all([
@@ -135,21 +167,9 @@ function Dashboard({ onLock }) {
     try { await api.backupNow(); flash('Backup criado.'); reload(); }
     catch (e) { flash(msg(e)); }
   }
-  async function lock() { await api.lock(); onLock(); }
 
   return (
-    <div className="app">
-      <div className="topbar">
-        <div>
-          <h1>Cosmi — Segurança & Backup</h1>
-          <div className="brand-note">Registro de apoio. Não substitui o prontuário oficial.</div>
-        </div>
-        <div className="row">
-          <button onClick={() => setChangePwd(true)}>Trocar senha</button>
-          <button onClick={lock}>Travar</button>
-        </div>
-      </div>
-
+    <div>
       {health && (health.neverBackedUp || health.stale ? (
         <div className="banner warn">
           ⚠️ {health.neverBackedUp
@@ -214,7 +234,6 @@ function Dashboard({ onLock }) {
       {toast && <div className="banner ok" style={{ position: 'fixed', bottom: 18, right: 18, margin: 0 }}>{toast}</div>}
 
       {restoreFor && <RestoreModal backup={restoreFor} onClose={() => setRestoreFor(null)} onDone={() => { setRestoreFor(null); reload(); flash('Backup restaurado.'); }} />}
-      {changePwd && <ChangePasswordModal onClose={() => setChangePwd(false)} onDone={() => { setChangePwd(false); flash('Senha alterada.'); }} />}
     </div>
   );
 }

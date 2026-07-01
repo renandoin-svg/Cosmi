@@ -7,10 +7,19 @@ certificado). Sem nuvem, sem telemetria. Interface em **português do Brasil**.
 > ⚠️ Dado sensível de saúde (LGPD). Segurança é requisito. Veja
 > [`docs/SEGURANCA.md`](docs/SEGURANCA.md).
 
-## Estado atual — Seção 1 concluída (modelo de dados + segurança)
+## Estado atual — §1 concluída; §2 (mapa facial) em demonstração
 
-Esta entrega cobre **apenas a §1** da spec. As demais seções (mapa facial,
-cadastro, catálogo, atendimento, histórico) vêm depois, na ordem da spec.
+Esta entrega cobre a **§1** (dados + segurança) e a **§2** como tela de
+demonstração. As demais seções (cadastro, catálogo, atendimento, histórico)
+vêm depois, na ordem da spec.
+
+**§2 — Mapa facial (demo, em memória):** vistas frontal/perfil, gesto
+toque=bolus / arraste=trajeto, atlas anatômico detalhado (terços faciais,
+ligamentos de retenção, sub-regiões de lábio e mento), camada opcional de
+zonas de perigo vascular, foto de fundo opcional, cascata Marca→Produto com
+"+ adicionar" e dedup, dose com unidade derivada do produto, região sugerida
+e editável, somas totais e por região ao vivo. Persistência em paciente/sessão
+entra nas §3/§5.
 
 Implementado:
 - Banco **SQLite criptografado em repouso com SQLCipher** (AES-256 + HMAC-SHA512).
