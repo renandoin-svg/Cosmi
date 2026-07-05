@@ -2,11 +2,12 @@ import React, { useRef, useState, useMemo, useEffect } from 'react';
 
 // ---------------------------------------------------------------------------
 // §2 Mapa facial interativo.
-// Atlas desenhado como retrato humano (tom de pele, cabelo, olhos, nariz,
-// lábios) com proporções por terços faciais; ligamentos de retenção, sub-
-// regiões de lábio e de mento (pogônio, gnátio, menton) e camada opcional de
-// zonas de perigo vascular baseada nos artigos compilados.
-// Marcações e catálogo são em memória (demonstração); persistência em §3/§5.
+// Atlas desenhado sobre um grid de proporções (cânones neoclássicos: terços
+// verticais iguais tricóton–glabela–subnasal–mento; quintos horizontais, cada
+// um = uma largura de olho; nariz ≈ 1 quinto; boca ≈ 1,5× largura do nariz).
+// Feições espelhadas para simetria. Ligamentos de retenção, sub-regiões de
+// lábio e de mento (pogônio, gnátio, menton) e camada opcional de zonas de
+// perigo vascular. Marcações/catálogo em memória (demo); persistência em §3/§5.
 // ---------------------------------------------------------------------------
 
 const TIPOS = {
@@ -49,34 +50,34 @@ const rotuloProduto = (p) => `${p.marca} ${p.produto}`.trim();
 // (à esquerda na imagem frontal). Coordenadas no viewBox 0 0 400 460.
 const REGIOES = {
   frontal: [
-    { nome: 'Fronte', x: 200, y: 120 }, { nome: 'Glabela', x: 200, y: 165 },
-    { nome: 'Supercílio D', x: 170, y: 156 }, { nome: 'Supercílio E', x: 230, y: 156 },
-    { nome: 'Têmpora D', x: 122, y: 150 }, { nome: 'Têmpora E', x: 278, y: 150 },
-    { nome: 'Pés de galinha D', x: 142, y: 182 }, { nome: 'Pés de galinha E', x: 258, y: 182 },
-    { nome: 'Tear trough D', x: 176, y: 192 }, { nome: 'Tear trough E', x: 224, y: 192 },
-    { nome: 'Malar D', x: 152, y: 214 }, { nome: 'Malar E', x: 248, y: 214 },
-    { nome: 'Dorso nasal', x: 200, y: 200 }, { nome: 'Ponta nasal', x: 200, y: 252 },
-    { nome: 'Sulco nasogeniano D', x: 178, y: 260 }, { nome: 'Sulco nasogeniano E', x: 222, y: 260 },
-    { nome: 'Filtro', x: 200, y: 280 }, { nome: 'Arco do cupido', x: 200, y: 294 },
-    { nome: 'Lábio superior D', x: 191, y: 296 }, { nome: 'Lábio superior E', x: 209, y: 296 },
-    { nome: 'Vermelhão superior', x: 200, y: 298 }, { nome: 'Lábio inferior', x: 200, y: 306 },
-    { nome: 'Comissura D', x: 174, y: 300 }, { nome: 'Comissura E', x: 226, y: 300 },
-    { nome: 'Sulco mentolabial', x: 200, y: 316 },
-    { nome: 'Masseter D', x: 140, y: 272 }, { nome: 'Masseter E', x: 260, y: 272 },
-    { nome: 'Linha mandibular D', x: 158, y: 302 }, { nome: 'Linha mandibular E', x: 242, y: 302 },
-    { nome: 'Pré-jowl D', x: 168, y: 320 }, { nome: 'Pré-jowl E', x: 232, y: 320 },
-    { nome: 'Pogônio', x: 200, y: 328 }, { nome: 'Gnátio', x: 200, y: 335 }, { nome: 'Menton', x: 200, y: 341 },
+    { nome: 'Fronte', x: 200, y: 120 }, { nome: 'Glabela', x: 200, y: 168 },
+    { nome: 'Supercílio D', x: 170, y: 166 }, { nome: 'Supercílio E', x: 230, y: 166 },
+    { nome: 'Têmpora D', x: 126, y: 150 }, { nome: 'Têmpora E', x: 274, y: 150 },
+    { nome: 'Pés de galinha D', x: 150, y: 188 }, { nome: 'Pés de galinha E', x: 250, y: 188 },
+    { nome: 'Tear trough D', x: 178, y: 196 }, { nome: 'Tear trough E', x: 222, y: 196 },
+    { nome: 'Malar D', x: 156, y: 220 }, { nome: 'Malar E', x: 244, y: 220 },
+    { nome: 'Dorso nasal', x: 200, y: 205 }, { nome: 'Ponta nasal', x: 200, y: 250 },
+    { nome: 'Sulco nasogeniano D', x: 182, y: 260 }, { nome: 'Sulco nasogeniano E', x: 218, y: 260 },
+    { nome: 'Filtro', x: 200, y: 266 }, { nome: 'Arco do cupido', x: 200, y: 278 },
+    { nome: 'Lábio superior D', x: 192, y: 279 }, { nome: 'Lábio superior E', x: 208, y: 279 },
+    { nome: 'Vermelhão superior', x: 200, y: 280 }, { nome: 'Lábio inferior', x: 200, y: 290 },
+    { nome: 'Comissura D', x: 180, y: 283 }, { nome: 'Comissura E', x: 220, y: 283 },
+    { nome: 'Sulco mentolabial', x: 200, y: 308 },
+    { nome: 'Masseter D', x: 150, y: 270 }, { nome: 'Masseter E', x: 250, y: 270 },
+    { nome: 'Linha mandibular D', x: 162, y: 300 }, { nome: 'Linha mandibular E', x: 238, y: 300 },
+    { nome: 'Pré-jowl D', x: 172, y: 312 }, { nome: 'Pré-jowl E', x: 228, y: 312 },
+    { nome: 'Pogônio', x: 200, y: 320 }, { nome: 'Gnátio', x: 200, y: 328 }, { nome: 'Menton', x: 200, y: 334 },
   ],
   perfil: [
-    { nome: 'Fronte', x: 250, y: 120 }, { nome: 'Supercílio', x: 250, y: 160 },
+    { nome: 'Fronte', x: 250, y: 120 }, { nome: 'Supercílio', x: 245, y: 160 },
     { nome: 'Têmpora', x: 292, y: 150 }, { nome: 'Pés de galinha', x: 272, y: 182 },
-    { nome: 'Zigomático', x: 260, y: 214 }, { nome: 'Pré-auricular', x: 300, y: 224 },
-    { nome: 'Dorso nasal', x: 198, y: 205 }, { nome: 'Ponta nasal', x: 184, y: 234 },
-    { nome: 'Sulco nasogeniano', x: 206, y: 260 }, { nome: 'Lábio superior', x: 194, y: 288 },
-    { nome: 'Lábio inferior', x: 194, y: 300 }, { nome: 'Comissura', x: 210, y: 296 },
-    { nome: 'Sulco mentolabial', x: 202, y: 318 }, { nome: 'Masseter', x: 296, y: 300 },
-    { nome: 'Linha mandibular', x: 272, y: 345 },
-    { nome: 'Pogônio', x: 198, y: 335 }, { nome: 'Gnátio', x: 203, y: 345 }, { nome: 'Menton', x: 212, y: 352 },
+    { nome: 'Zigomático', x: 262, y: 214 }, { nome: 'Pré-auricular', x: 300, y: 224 },
+    { nome: 'Dorso nasal', x: 200, y: 200 }, { nome: 'Ponta nasal', x: 188, y: 224 },
+    { nome: 'Sulco nasogeniano', x: 204, y: 258 }, { nome: 'Lábio superior', x: 196, y: 286 },
+    { nome: 'Lábio inferior', x: 196, y: 298 }, { nome: 'Comissura', x: 210, y: 292 },
+    { nome: 'Sulco mentolabial', x: 204, y: 316 }, { nome: 'Masseter', x: 296, y: 300 },
+    { nome: 'Linha mandibular', x: 272, y: 344 },
+    { nome: 'Pogônio', x: 200, y: 336 }, { nome: 'Gnátio', x: 205, y: 344 }, { nome: 'Menton', x: 214, y: 352 },
   ],
 };
 function regiaoMaisProxima(view, x, y) {
@@ -94,171 +95,140 @@ function raioPonto(p) {
 
 const LIG_COLOR = '#3a86c8';   // ligamentos de retenção (✕)
 const DANGER = '#e0554f';      // zonas de perigo vascular
-const SKIN_STROKE = '#b3866a';
-const FEAT = '#7d5a49';         // traço das feições
-const FEAT_SOFT = '#a07a66';
+const SKIN_STROKE = '#b98a6d';
 const HAIR = '#4a3a30';
-const LIPS = '#cf9082';
-const THIRDS = '#a9846b';
+const THIRDS = '#b58e72';
 const LABEL = '#5f4636';
 
 function MapDefs() {
   return (
     <defs>
-      <radialGradient id="skin" cx="50%" cy="42%" r="66%">
-        <stop offset="0%" stopColor="#f3d5bd" />
-        <stop offset="66%" stopColor="#e6bd9d" />
-        <stop offset="100%" stopColor="#d0a07f" />
+      <radialGradient id="skin" cx="50%" cy="40%" r="70%">
+        <stop offset="0%" stopColor="#f6dcc6" /><stop offset="70%" stopColor="#eec4a4" /><stop offset="100%" stopColor="#dcae8b" />
       </radialGradient>
-      <radialGradient id="skinP" cx="46%" cy="42%" r="68%">
-        <stop offset="0%" stopColor="#f1d2ba" />
-        <stop offset="70%" stopColor="#e3ba9a" />
-        <stop offset="100%" stopColor="#cd9d7c" />
+      <radialGradient id="skinP" cx="46%" cy="42%" r="70%">
+        <stop offset="0%" stopColor="#f4d8c1" /><stop offset="70%" stopColor="#e9c1a1" /><stop offset="100%" stopColor="#d7a986" />
       </radialGradient>
+      {/* Meia-face direita (sobrancelha + olho) — espelhada para simetria perfeita */}
+      <g id="halfR" fill="none" stroke="#7a5342" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M216 168 C226 161 240 160 248 166 C240 164 226 165 217 171 Z" fill="#5b4436" stroke="none" />
+        <path d="M215 187 C224 178 240 178 246 186 C240 193 224 193 215 187 Z" fill="#fbf4ec" />
+        <path d="M216 184 C225 178 239 178 246 184" stroke="#a07a66" strokeWidth="0.9" />
+        <circle cx="230" cy="186" r="6.6" fill="#5f4130" stroke="none" />
+        <circle cx="230" cy="186" r="2.9" fill="#211712" stroke="none" />
+        <circle cx="232" cy="184" r="1.1" fill="#fff" stroke="none" />
+      </g>
     </defs>
   );
 }
 
-// --------- Atlas frontal (retrato) ---------
+// --------- Atlas frontal ---------
 function AtlasFrontal({ rotulos }) {
   return (
     <g strokeLinecap="round" strokeLinejoin="round">
       {/* Pescoço */}
-      <path d="M172 330 C172 350 170 362 164 378 L236 378 C230 362 228 350 228 330 Z" fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.2" opacity="0.96" />
+      <path d="M174 330 C174 350 172 362 166 380 L234 380 C228 362 226 350 226 330 Z" fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.2" opacity="0.97" />
       {/* Orelhas */}
-      <path d="M118 196 C106 192 104 210 110 224 C114 234 122 236 128 232" fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.2" />
-      <path d="M282 196 C294 192 296 210 290 224 C286 234 278 236 272 232" fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.2" />
-
-      {/* Rosto (pele) */}
-      <path d="M200 80 C168 78 138 88 128 114 C118 140 116 166 120 196 C124 224 132 255 150 286
-               C164 315 184 335 200 341 C216 335 236 315 250 286 C268 255 276 224 280 196
-               C284 166 282 140 272 114 C262 88 232 78 200 80 Z"
-        fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.6" />
-
-      {/* Sombreamento suave das maçãs do rosto */}
-      <g fill="#c78f6d" opacity="0.10"><ellipse cx="152" cy="216" rx="17" ry="10" /><ellipse cx="248" cy="216" rx="17" ry="10" /></g>
-
+      <path d="M124 198 C112 194 110 214 116 228 C120 238 128 240 134 236" fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.2" />
+      <path d="M276 198 C288 194 290 214 284 228 C280 238 272 240 266 236" fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.2" />
+      {/* Rosto */}
+      <path d="M200 46 C152 46 122 74 118 118 C114 150 118 180 126 206 C132 232 142 262 160 292
+               C170 312 180 326 190 333 C194 336 206 336 210 333 C220 326 230 312 240 292
+               C258 262 268 232 274 206 C282 180 286 150 282 118 C278 74 248 46 200 46 Z"
+        fill="url(#skin)" stroke={SKIN_STROKE} strokeWidth="1.7" />
+      {/* Sombreado das maçãs */}
+      <g fill="#cf9a78" opacity="0.12"><ellipse cx="156" cy="222" rx="16" ry="10" /><ellipse cx="244" cy="222" rx="16" ry="10" /></g>
       {/* Cabelo */}
-      <path d="M120 118 C106 62 150 30 200 30 C250 30 294 62 280 118
-               C274 102 260 90 242 84 C234 72 218 68 200 68 C182 68 166 72 158 84
-               C140 90 126 102 120 118 Z" fill={HAIR} />
-
-      {/* Terços faciais (referência) */}
-      <g stroke={THIRDS} strokeWidth="1" strokeDasharray="4 5" opacity="0.5" fill="none">
-        <line x1="122" y1="166" x2="278" y2="166" />
-        <line x1="128" y1="256" x2="272" y2="256" />
+      <path d="M118 118 C110 58 154 32 200 32 C246 32 290 58 282 118 C276 98 262 86 244 82
+               C236 72 220 70 200 70 C180 70 164 72 156 82 C138 86 124 98 118 118 Z" fill={HAIR} />
+      {/* Terços */}
+      <g stroke={THIRDS} strokeWidth="1" strokeDasharray="4 6" opacity="0.45" fill="none">
+        <line x1="126" y1="172" x2="274" y2="172" /><line x1="132" y1="256" x2="268" y2="256" />
       </g>
-
-      {/* Sobrancelhas */}
-      <path d="M150 161 C162 152 178 151 189 157 C178 155 162 157 151 165 Z" fill={HAIR} opacity="0.85" />
-      <path d="M250 161 C238 152 222 151 211 157 C222 155 238 157 249 165 Z" fill={HAIR} opacity="0.85" />
-
-      {/* Olhos */}
-      <g fill="none" stroke={FEAT} strokeWidth="1.4">
-        <path d="M150 181 C158 173 176 173 184 180 C176 188 158 188 150 181 Z" fill="#f7efe6" />
-        <path d="M216 181 C224 173 242 173 250 181 C242 188 224 188 216 181 Z" fill="#f7efe6" />
-        <path d="M151 178 C160 172 176 172 185 178" stroke={FEAT_SOFT} strokeWidth="0.9" />
-        <path d="M215 178 C224 172 240 172 249 178" stroke={FEAT_SOFT} strokeWidth="0.9" />
+      {/* Nariz (simétrico): dorso, asas, base, columela */}
+      <g fill="none" stroke="#c79a7d" strokeWidth="1.1">
+        <path d="M190 176 C189 200 187 224 186 242" /><path d="M210 176 C211 200 213 224 214 242" />
+        <path d="M186 242 C179 244 176 250 181 255 C185 258 190 256 192 251" />
+        <path d="M214 242 C221 244 224 250 219 255 C215 258 210 256 208 251" />
       </g>
-      <circle cx="167" cy="181" r="6" fill="#6b4a34" /><circle cx="167" cy="181" r="2.6" fill="#241a14" /><circle cx="169" cy="179" r="1" fill="#fff" />
-      <circle cx="233" cy="181" r="6" fill="#6b4a34" /><circle cx="233" cy="181" r="2.6" fill="#241a14" /><circle cx="235" cy="179" r="1" fill="#fff" />
-
-      {/* Nariz */}
-      <g fill="none" stroke={FEAT_SOFT} strokeWidth="1.2">
-        <path d="M194 172 C193 192 192 212 190 232" /><path d="M206 172 C207 192 208 212 210 232" />
-        <path d="M190 232 C187 244 191 253 200 255 C209 253 213 244 210 232" stroke={FEAT} />
-        <path d="M190 243 C183 243 180 250 185 255 C189 257 192 254 193 250" />
-        <path d="M210 243 C217 243 220 250 215 255 C211 257 208 254 207 250" />
-      </g>
-      <ellipse cx="190" cy="251" rx="2.2" ry="1.4" fill="#8a6653" /><ellipse cx="210" cy="251" rx="2.2" ry="1.4" fill="#8a6653" />
-
+      <path d="M186 250 C190 258 210 258 214 250 C210 260 190 260 186 250 Z" fill="#dcae8b" stroke="#c79a7d" strokeWidth="0.7" />
+      <ellipse cx="189" cy="252" rx="2.3" ry="1.5" fill="#9a715b" /><ellipse cx="211" cy="252" rx="2.3" ry="1.5" fill="#9a715b" />
       {/* Filtro */}
-      <g stroke={FEAT_SOFT} strokeWidth="0.8" fill="none" opacity="0.75"><path d="M196 260 L195 290" /><path d="M204 260 L205 290" /></g>
-
-      {/* Lábios */}
-      <g stroke="#a76b5f" strokeWidth="1.1">
-        <path d="M173 298 C183 291 191 291 200 296 C209 291 217 291 227 298 C214 304 186 304 173 298 Z" fill={LIPS} />
-        <path d="M173 298 C186 312 214 312 227 298 C214 304 186 304 173 298 Z" fill={LIPS} />
-        <path d="M173 298 C186 301 214 301 227 298" stroke="#8f5a50" fill="none" />
+      <g stroke="#c79a7d" strokeWidth="0.8" fill="none" opacity="0.7"><path d="M196 258 L195 274" /><path d="M204 258 L205 274" /></g>
+      {/* Lábios (boca ≈ 1,5× largura do nariz) */}
+      <g stroke="#b06a5c" strokeWidth="1">
+        <path d="M178 282 C186 275 194 276 200 280 C206 276 214 275 222 282 C213 287 187 287 178 282 Z" fill="#d69384" />
+        <path d="M178 282 C188 296 212 296 222 282 C213 287 187 287 178 282 Z" fill="#d18b7c" />
+        <path d="M178 282 C188 284 212 284 222 282" stroke="#9c5f53" fill="none" />
       </g>
-
       {/* Sulco mentolabial */}
-      <g fill="none" stroke={FEAT_SOFT} strokeWidth="1.1" opacity="0.7"><path d="M180 316 C190 322 210 322 220 316" /></g>
-
+      <path d="M184 308 C192 314 208 314 216 308" fill="none" stroke="#c79a7d" strokeWidth="1" opacity="0.7" />
+      {/* Feições espelhadas */}
+      <use href="#halfR" />
+      <use href="#halfR" transform="matrix(-1 0 0 1 400 0)" />
       {/* Ligamentos de retenção (✕): zigomático, zigomático-cutâneo, masseterino, mandibular */}
-      <Ligaments pontos={[[128, 206], [272, 206], [150, 224], [250, 224], [140, 272], [260, 272], [168, 316], [232, 316]]} />
+      <Ligaments pontos={[[134, 209], [266, 209], [157, 229], [243, 229], [149, 279], [251, 279], [173, 315], [227, 315]]} />
 
       {rotulos && (
         <g fill={LABEL} fontSize="7.5" fontWeight="600">
-          <text x="284" y="130">terço superior</text>
-          <text x="284" y="214">terço médio</text>
-          <text x="284" y="320">terço inferior</text>
-          <text x="200" y="286" textAnchor="middle" fontWeight="400">filtro</text>
-          <text x="200" y="329" textAnchor="middle">pogônio</text>
-          <text x="200" y="337" textAnchor="middle">gnátio</text>
-          <text x="200" y="349" textAnchor="middle">menton</text>
+          <text x="282" y="130">terço superior</text>
+          <text x="282" y="216">terço médio</text>
+          <text x="282" y="312">terço inferior</text>
+          <text x="200" y="272" textAnchor="middle" fontWeight="400">filtro</text>
+          <text x="200" y="322" textAnchor="middle">pogônio</text>
+          <text x="200" y="330" textAnchor="middle">gnátio</text>
+          <text x="200" y="343" textAnchor="middle">menton</text>
         </g>
       )}
     </g>
   );
 }
 
-// --------- Atlas perfil (retrato de lado, face à esquerda) ---------
+// --------- Atlas perfil (face à esquerda) ---------
 function AtlasPerfil({ rotulos }) {
   return (
     <g strokeLinecap="round" strokeLinejoin="round">
       {/* Pescoço */}
-      <path d="M242 356 C244 372 242 382 238 392 L322 392 L322 342 C314 352 300 356 282 356 Z"
-        fill="url(#skinP)" stroke={SKIN_STROKE} strokeWidth="1.2" opacity="0.96" />
-
-      {/* Rosto (pele), face voltada à esquerda */}
-      <path d="M238 78 C226 92 220 120 220 150 C220 160 219 166 221 171
-               C210 182 194 202 184 224 C180 231 180 236 186 240
-               C190 243 193 247 196 256 C192 268 189 278 191 288
-               C193 296 193 300 190 304 C188 310 192 316 197 320
-               C196 330 195 340 203 347 C211 354 226 358 242 358
-               C273 358 298 346 306 320 C316 298 324 250 320 188
-               C317 120 296 74 250 74 C246 74 242 76 238 78 Z"
-        fill="url(#skinP)" stroke={SKIN_STROKE} strokeWidth="1.6" />
-
-      {/* Sombreamento suave */}
-      <g fill="#c78f6d" opacity="0.10"><ellipse cx="258" cy="238" rx="20" ry="13" /></g>
-
+      <path d="M244 356 C246 372 244 382 240 392 L322 392 L322 344 C314 354 300 358 284 358 Z"
+        fill="url(#skinP)" stroke={SKIN_STROKE} strokeWidth="1.2" opacity="0.97" />
+      {/* Contorno de perfil construído nos terços */}
+      <path d="M244 60 C224 66 214 92 214 120 C214 138 214 152 216 166
+               C210 178 198 196 190 214 C186 221 186 228 192 233
+               C196 237 199 244 200 254 C197 266 194 276 196 286
+               C198 294 198 298 195 302 C193 308 197 314 202 318
+               C201 328 200 338 207 346 C214 353 228 357 244 357
+               C275 357 300 344 307 316 C316 292 322 248 318 186
+               C314 120 296 66 258 60 C253 59 248 59 244 60 Z"
+        fill="url(#skinP)" stroke={SKIN_STROKE} strokeWidth="1.7" />
+      {/* Sombreado */}
+      <g fill="#cf9a78" opacity="0.12"><ellipse cx="264" cy="238" rx="20" ry="13" /></g>
       {/* Cabelo */}
-      <path d="M220 150 C214 92 250 46 292 56 C330 66 342 122 320 188
-               C324 140 308 100 286 90 C266 80 244 82 230 108 C224 120 221 134 220 150 Z" fill={HAIR} />
-
+      <path d="M214 122 C210 68 250 42 293 53 C333 64 344 132 320 190 C320 150 312 112 291 99
+               C269 85 241 90 227 113 C223 120 217 128 214 122 Z" fill={HAIR} />
       {/* Orelha */}
-      <path d="M292 216 C283 214 280 229 286 243 C290 253 300 255 305 249 C310 242 309 223 300 218 C298 216 295 216 292 216 Z"
+      <path d="M294 214 C284 212 281 228 287 243 C291 254 302 256 307 249 C312 242 311 222 302 217 C300 215 297 214 294 214 Z"
         fill="url(#skinP)" stroke={SKIN_STROKE} strokeWidth="1.2" />
-      <path d="M294 226 C291 230 292 240 297 244" fill="none" stroke={FEAT_SOFT} strokeWidth="0.9" />
-
-      {/* Terços faciais */}
-      <g stroke={THIRDS} strokeWidth="1" strokeDasharray="4 5" opacity="0.45" fill="none">
-        <line x1="212" y1="168" x2="322" y2="168" />
-        <line x1="196" y1="258" x2="322" y2="258" />
+      <path d="M296 225 C293 230 294 240 299 244" fill="none" stroke="#c79a7d" strokeWidth="0.9" />
+      {/* Terços */}
+      <g stroke={THIRDS} strokeWidth="1" strokeDasharray="4 6" opacity="0.4" fill="none">
+        <line x1="206" y1="168" x2="322" y2="168" /><line x1="192" y1="254" x2="322" y2="254" />
       </g>
-
       {/* Sobrancelha + olho */}
-      <path d="M228 160 C238 154 252 154 262 159 C252 157 238 158 229 164 Z" fill={HAIR} opacity="0.85" />
-      <path d="M232 178 C240 173 250 174 257 179 C250 183 240 183 232 178 Z" fill="#f7efe6" stroke={FEAT} strokeWidth="1.1" />
-      <circle cx="244" cy="179" r="4" fill="#6b4a34" /><circle cx="244" cy="179" r="1.8" fill="#241a14" />
-
+      <path d="M226 160 C236 154 250 154 260 159 C250 157 236 158 227 164 Z" fill="#5b4436" />
+      <path d="M230 176 C238 171 248 172 255 177 C248 181 238 181 230 176 Z" fill="#fbf4ec" stroke="#7a5342" strokeWidth="1.1" />
+      <circle cx="242" cy="177" r="4.2" fill="#5f4130" /><circle cx="242" cy="177" r="1.9" fill="#211712" />
       {/* Narina */}
-      <path d="M188 240 C193 243 199 241 199 236" fill="none" stroke={FEAT} strokeWidth="1.1" />
-      <ellipse cx="192" cy="242" rx="2.2" ry="1.4" fill="#8a6653" />
-
+      <path d="M181 238 C186 241 193 239 193 234" fill="none" stroke="#7a5342" strokeWidth="1.1" />
+      <ellipse cx="185" cy="240" rx="2.3" ry="1.5" fill="#9a715b" />
       {/* Lábios */}
-      <g fill={LIPS} stroke="#a76b5f" strokeWidth="1">
-        <path d="M190 286 C196 283 202 284 203 288 C199 291 193 292 189 291 Z" />
-        <path d="M190 298 C196 302 202 303 203 300 C200 306 193 307 189 303 Z" />
+      <g fill="#d69384" stroke="#b06a5c" strokeWidth="1">
+        <path d="M188 284 C194 281 201 282 202 286 C198 289 192 290 187 289 Z" />
+        <path d="M188 296 C194 300 201 301 202 298 C199 304 192 305 187 301 Z" />
       </g>
-
       {/* Sulco mentolabial */}
-      <path d="M198 318 C202 322 208 322 212 316" fill="none" stroke={FEAT_SOFT} strokeWidth="1.1" opacity="0.7" />
-
+      <path d="M196 316 C200 320 207 320 211 314" fill="none" stroke="#c79a7d" strokeWidth="1" opacity="0.7" />
       {/* Ligamentos */}
-      <Ligaments pontos={[[286, 150], [258, 216], [293, 300], [246, 344]]} />
+      <Ligaments pontos={[[289, 153], [261, 219], [295, 303], [251, 345]]} />
 
       {rotulos && (
         <g fill={LABEL} fontSize="7.5" fontWeight="600">
@@ -291,22 +261,22 @@ function Ligaments({ pontos }) {
 function DangerFrontal() {
   return (
     <g fill="none" stroke={DANGER} strokeWidth="2.6" strokeOpacity="0.55" strokeLinecap="round">
-      <path d="M152 300 C160 292 170 298 176 298 C182 286 186 272 188 256" />
-      <path d="M248 300 C240 292 230 298 224 298 C218 286 214 272 212 256" />
-      <path d="M188 256 C186 234 185 208 187 186 C188 176 190 170 191 162" />
-      <path d="M212 256 C214 234 215 208 213 186 C212 176 210 170 209 162" />
-      <path d="M200 204 L200 250" strokeDasharray="3 3" />
-      <path d="M174 296 C186 292 214 292 226 296" strokeOpacity="0.4" />
-      <path d="M174 301 C186 308 214 308 226 301" strokeOpacity="0.4" />
+      <path d="M156 300 C164 292 174 288 180 284 C185 272 187 260 188 250" />
+      <path d="M244 300 C236 292 226 288 220 284 C215 272 213 260 212 250" />
+      <path d="M188 250 C186 230 185 208 187 186 C188 178 190 172 191 168" />
+      <path d="M212 250 C214 230 215 208 213 186 C212 178 210 172 209 168" />
+      <path d="M200 190 L200 250" strokeDasharray="3 3" />
+      <path d="M178 280 C188 276 212 276 222 280" strokeOpacity="0.4" />
+      <path d="M178 284 C188 292 212 292 222 284" strokeOpacity="0.4" />
     </g>
   );
 }
 function DangerPerfil() {
   return (
     <g fill="none" stroke={DANGER} strokeWidth="2.6" strokeOpacity="0.55" strokeLinecap="round">
-      <path d="M300 248 C296 214 288 178 278 150" />
-      <path d="M270 352 C250 330 224 306 210 298 C202 290 198 272 196 256" />
-      <path d="M196 256 C196 234 197 210 206 188" />
+      <path d="M300 246 C296 212 288 176 278 150" />
+      <path d="M262 352 C244 330 220 300 205 288 C198 280 194 264 192 250" />
+      <path d="M192 250 C192 230 194 208 202 190" />
     </g>
   );
 }
@@ -465,9 +435,9 @@ export default function MapaFacial() {
                 const mx = (p.x + p.x2) / 2, my = (p.y + p.y2) / 2;
                 return (
                   <g key={p.id} onPointerDown={(e) => { e.stopPropagation(); setEditingId(p.id); }} style={{ cursor: 'pointer' }}>
-                    <line data-point="1" x1={p.x} y1={p.y} x2={p.x2} y2={p.y2} stroke={cor} strokeOpacity={0.8} strokeWidth={sel ? 7 : 5} strokeLinecap="round" />
+                    <line data-point="1" x1={p.x} y1={p.y} x2={p.x2} y2={p.y2} stroke={cor} strokeOpacity={0.85} strokeWidth={sel ? 7 : 5} strokeLinecap="round" />
                     <circle data-point="1" cx={p.x} cy={p.y} r={3.5} fill="#fff" stroke={cor} strokeWidth={2} />
-                    <text x={mx + 6} y={my - 6} fontSize="10" fontWeight="700" fill={cor} stroke="#fff" strokeWidth="0.5" pointerEvents="none">{p.dose}</text>
+                    <text x={mx + 6} y={my - 6} fontSize="10" fontWeight="700" fill={cor} stroke="#0e1116" strokeWidth="0.5" pointerEvents="none">{p.dose}</text>
                   </g>
                 );
               }
@@ -480,7 +450,7 @@ export default function MapaFacial() {
               );
             })}
             {draft && Math.hypot(draft.x2 - draft.x, draft.y2 - draft.y) > THRESHOLD && (
-              <line x1={draft.x} y1={draft.y} x2={draft.x2} y2={draft.y2} stroke="#33251d" strokeOpacity={0.6} strokeWidth={4} strokeDasharray="4 4" strokeLinecap="round" />
+              <line x1={draft.x} y1={draft.y} x2={draft.x2} y2={draft.y2} stroke="#1a2733" strokeOpacity={0.7} strokeWidth={4} strokeDasharray="4 4" strokeLinecap="round" />
             )}
           </svg>
 
